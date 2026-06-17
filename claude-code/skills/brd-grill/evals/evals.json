@@ -1,0 +1,61 @@
+{
+  "skill_name": "brd-grill",
+  "evals": [
+    {
+      "id": 0,
+      "name": "greenfield-ops-dashboard",
+      "prompt": "I want to build an internal dashboard for our ops team — grill me on requirements.",
+      "expected_output": "BRD.md and GLOSSARY.md created in repo root. BRD has stakeholders, scope (in/out), 3 functional requirements with acceptance criteria and MoSCoW priorities, non-functional requirements, constraints, assumptions, risks. GLOSSARY defines 'Incident' (PagerDuty, not Jira), 'Ops Team' (SRE, not customer support), 'Deploy' (production only). Skill detected greenfield mode and stated it.",
+      "files": [],
+      "assertions": [
+        {"text": "BRD.md exists at sandbox root", "type": "file_exists", "path": "BRD.md"},
+        {"text": "GLOSSARY.md exists at sandbox root", "type": "file_exists", "path": "GLOSSARY.md"},
+        {"text": "BRD has Executive Summary section", "type": "contains", "needle": "Executive Summary"},
+        {"text": "BRD has Stakeholders section", "type": "contains", "needle": "Stakeholders"},
+        {"text": "BRD has In Scope and Out of Scope", "type": "contains_all", "needles": ["In Scope", "Out of Scope"]},
+        {"text": "BRD lists 3+ functional requirements", "type": "regex_count_min", "pattern": "FR[-_ ]?[0-9]", "min": 3},
+        {"text": "BRD uses MoSCoW prioritization (Must/Should/Could/Won't)", "type": "contains_any", "needles": ["Must", "Should", "Could"]},
+        {"text": "BRD has acceptance criteria for FR1 (<2s load)", "type": "contains_any", "needles": ["<2s", "<2 s", "2 seconds", "two seconds"]},
+        {"text": "GLOSSARY defines Incident", "type": "contains", "needle": "Incident"},
+        {"text": "GLOSSARY clarifies Incident is PagerDuty (not Jira)", "type": "contains", "needle": "PagerDuty"},
+        {"text": "Transcript mentions greenfield mode detection", "type": "transcript_contains", "needle": "greenfield"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "existing-codebase-subscription",
+      "prompt": "Help me write a BRD for adding subscription billing to this app.",
+      "expected_output": "Skill detects existing codebase. Explores PaywayApp source. Updates existing GLOSSARY.md with new terms (Subscription, Plan, Renewal, Cancellation, Dunning). Distinguishes Cancellation (end-of-period termination) from Refund. Cross-references refund.py limitation. Builds BRD.md with 4 FRs, acceptance criteria, priorities.",
+      "files": [],
+      "assertions": [
+        {"text": "BRD.md exists", "type": "file_exists", "path": "BRD.md"},
+        {"text": "GLOSSARY.md still exists and was updated", "type": "file_exists", "path": "GLOSSARY.md"},
+        {"text": "GLOSSARY retains original Customer term", "type": "glossary_contains", "needle": "Customer"},
+        {"text": "GLOSSARY adds Subscription term", "type": "glossary_contains", "needle": "Subscription"},
+        {"text": "GLOSSARY adds Plan term", "type": "glossary_contains", "needle": "Plan"},
+        {"text": "GLOSSARY adds Cancellation term", "type": "glossary_contains", "needle": "Cancellation"},
+        {"text": "GLOSSARY adds Dunning term", "type": "glossary_contains", "needle": "Dunning"},
+        {"text": "Cancellation defined as end-of-period (not refund)", "type": "glossary_phrase_near", "term": "Cancellation", "needles": ["period end", "end of period", "until period", "no refund", "not a refund"]},
+        {"text": "BRD has 4 functional requirements", "type": "regex_count_min", "pattern": "FR[-_ ]?[0-9]", "min": 4},
+        {"text": "BRD references Stripe constraint", "type": "contains", "needle": "Stripe"},
+        {"text": "Transcript shows codebase exploration (refund.py or invoice.py mentioned)", "type": "transcript_contains_any", "needles": ["refund.py", "invoice.py", "src/billing"]}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "inflight-refunds-contradiction",
+      "prompt": "We need to scope a new feature for handling refunds.",
+      "expected_output": "Skill detects in-flight mode. Surfaces code/docs contradiction (refund_service.py NotImplementedError vs docs/refunds.md claiming support). BRD captures partial refund FRs with approval workflow. GLOSSARY distinguishes Refund from Chargeback.",
+      "files": [],
+      "assertions": [
+        {"text": "BRD.md exists", "type": "file_exists", "path": "BRD.md"},
+        {"text": "GLOSSARY.md exists", "type": "file_exists", "path": "GLOSSARY.md"},
+        {"text": "Transcript surfaces code vs docs contradiction", "type": "transcript_contains_any", "needles": ["contradict", "NotImplementedError", "docs say", "code says", "docs claim", "docs/refunds.md"]},
+        {"text": "BRD includes approval workflow >$100", "type": "contains_any", "needles": ["$100", "100", "approval"]},
+        {"text": "BRD includes audit log requirement", "type": "contains_any", "needles": ["audit log", "audit trail", "SOC2"]},
+        {"text": "GLOSSARY distinguishes Refund from Chargeback", "type": "glossary_contains_all", "needles": ["Refund", "Chargeback"]},
+        {"text": "BRD has 4 functional requirements", "type": "regex_count_min", "pattern": "FR[-_ ]?[0-9]", "min": 4}
+      ]
+    }
+  ]
+}
