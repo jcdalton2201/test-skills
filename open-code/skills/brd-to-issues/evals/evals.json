@@ -1,0 +1,63 @@
+{
+  "skill_name": "brd-to-issues",
+  "common_assertions": [
+    "EPIC.md file is produced",
+    "STORIES.md file is produced",
+    "EPIC.md contains a Story Map table with ID, Title, Priority, Size, Blocked by columns",
+    "Every story in STORIES.md has a Priority field with a MoSCoW value (Must, Should, Could, Won't)",
+    "Every story in STORIES.md has a Size field with a numeric day estimate of 1, 2, or 3",
+    "Every story in STORIES.md has a Blocked by field (may be em-dash or list)",
+    "Every story in STORIES.md has a User value statement in the form 'As a <role>, I can <action> so that <outcome>'",
+    "STORIES.md contains at least one Gherkin scenario (Given/When/Then) per story",
+    "No story has Size > 3 days",
+    "Story IDs are zero-padded three-digit identifiers like S-001",
+    "Every Must-priority FR from the source BRD is covered by at least one story",
+    "Stories are sequenced with a walking-skeleton story first (touches multiple layers end to end)",
+    "Output uses canonical terms from the source BRD without inventing new names"
+  ],
+  "evals": [
+    {
+      "id": 0,
+      "name": "thin-brd-teampulse",
+      "prompt": "Convert the BRD at BRD.md into an Epic and Stories using vertical-slice architecture. Output EPIC.md and STORIES.md at the repo root.",
+      "expected_output": "EPIC.md + STORIES.md derived from a thin BRD with 3 FRs and several open questions. Skill should produce a walking-skeleton story first, slice each Must into ~3-day stories, surface unresolved questions, and not invent priorities or AC the BRD did not specify.",
+      "files": ["fixtures/thin-brd/BRD.md"],
+      "specific_assertions": [
+        "EPIC.md Open Questions section preserves the unresolved BRD questions (reminder channel, team definition) rather than inventing answers",
+        "Pulse-submission and manager-dashboard FRs are each represented by at least one story",
+        "If reminders story exists, it is marked Should priority (matching FR-3)",
+        "No more than ~6 stories total (BRD is small and intentionally thin)"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "multi-capability-mercatorpay",
+      "prompt": "Convert the BRD at BRD.md into an Epic and Stories using vertical-slice architecture. Output EPIC.md and STORIES.md at the repo root.",
+      "expected_output": "EPIC.md + STORIES.md for a marketplace BRD with 9 FRs spanning seller onboarding, checkout, payouts, tax, admin. Skill should slice each Must FR into multiple 3-day vertical stories (e.g. checkout-with-tax becomes several stories), sequence with walking skeleton first, identify blockers between Stripe Connect setup, KYC, payouts, etc.",
+      "files": ["fixtures/multi-capability-brd/BRD.md"],
+      "specific_assertions": [
+        "Checkout FR (FR-4) is decomposed into multiple slices (e.g. single-item checkout, EU VAT, US sales tax, receipt) rather than one monolithic story",
+        "Seller KYC story (FR-1) exists and blocks the seller payout story (FR-6)",
+        "Map upload story (FR-2) includes a chunked-upload acceptance criterion or is split to defer chunked uploads",
+        "Walking-skeleton story exists that exercises auth + one round trip through buyer or seller flow",
+        "Stripe Connect KYC is listed as a blocker or dependency for any payout-related story",
+        "Total story count between ~12 and ~25 (sufficient slicing for 9 FRs without ticket explosion)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "real-cyprian-translation",
+      "prompt": "Convert the BRD at BRD.md into an Epic and Stories using vertical-slice architecture. Output EPIC.md and STORIES.md at the repo root.",
+      "expected_output": "EPIC.md + STORIES.md for the GrapheneOS translation app (12 BRs, mobile, OCR, STT, offline fallback). Skill should slice across modalities (text/audio/image), order risky integrations (LibreTranslate, EasyNMT, PaddleOCR) appropriately, produce Gherkin AC, and produce a walking-skeleton story that proves end-to-end on Pixel 9 Pro.",
+      "files": ["fixtures/cyprian-real-brd/BRD.md"],
+      "specific_assertions": [
+        "Walking-skeleton story exercises end-to-end translation on GrapheneOS / Pixel 9 Pro (e.g. text input -> LibreTranslate -> displayed translation)",
+        "Each modality (text BR-003, audio BR-004, image/OCR BR-005) has its own dedicated story or slice set",
+        "Server preference (BR-008) and offline fallback (BR-009) are separate stories with the offline story blocked by or sequenced after the server story",
+        "TLS/encryption requirement (BR-010) is captured either as a cross-cutting NFR story or baked into AC of network-touching stories",
+        "Google-free constraint (BR-001) appears in either a dedicated guardrail story or in AC of the walking-skeleton story",
+        "Total story count between ~14 and ~25"
+      ]
+    }
+  ]
+}
